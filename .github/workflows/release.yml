@@ -1,0 +1,33 @@
+name: Release
+on:
+  push:
+    tags:
+      - 'v*'
+permissions:
+  contents: write
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate
+        run: |
+          test "v$(bash scripts/linux-inspector.sh --version)" = "$GITHUB_REF_NAME"
+          bash -n scripts/linux-inspector.sh
+          bash -n tests/smoke-test.sh
+          bash tests/smoke-test.sh
+          shellcheck scripts/linux-inspector.sh tests/smoke-test.sh
+      - name: Prepare assets
+        run: |
+          mkdir dist
+          cp scripts/linux-inspector.sh dist/linux-inspector.sh
+          cd dist
+          sha256sum linux-inspector.sh > SHA256SUMS
+          sha256sum -c SHA256SUMS
+      - name: Publish Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" dist/linux-inspector.sh dist/SHA256SUMS \
+            --verify-tag --title "$GITHUB_REF_NAME" \
+            --notes "Linux System & Service Inspector $GITHUB_REF_NAME. Read-only Linux environment inspection. Verify SHA256SUMS before use."
