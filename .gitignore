@@ -1,0 +1,5 @@
+*.log
+linux-inspector-report*.txt
+linux_basic_info_*.txt
+reports/
+.DS_Store

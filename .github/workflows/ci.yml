@@ -1,0 +1,17 @@
+name: CI
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Bash syntax
+        run: |
+          bash -n scripts/linux-inspector.sh
+          bash -n tests/smoke-test.sh
+      - name: Smoke test
+        run: bash tests/smoke-test.sh
+      - name: ShellCheck
+        run: shellcheck scripts/linux-inspector.sh tests/smoke-test.sh
